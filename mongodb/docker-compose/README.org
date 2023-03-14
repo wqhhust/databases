@@ -8,7 +8,11 @@ docker exec -it mongo2 sh -c "mongo --port 30002"
 docker exec -it mongo3 sh -c "mongo --port 30003"
 
 #+end_src
+* UI for mongo
+mongo-express
+we use run a docker for it
 
+* replicate set
 
 test failover
 #+begin_src js
@@ -19,7 +23,6 @@ db.adminCommand({ "shutdown" : 1, "force" : true });
 get replica set status
 #+begin_src javascript
 rs.status();
-// remove mongo1
 db.adminCommand(
   {
     "dropConnections" : 1,
@@ -28,6 +31,7 @@ db.adminCommand(
     ]
   }
 )
+// remove mongo1
 rs.remove("mongo1:30001")
 rs.printReplicationInfo()
 rs.printSecondaryReplicationInfo()
@@ -67,4 +71,45 @@ my-replica-set:SECONDARY> db.test.find();
 { "_id" : ObjectId("64102be396cf0dfaed726a67"), "test" : 1 }
 my-replica-set:SECONDARY>
 
+#+end_src
+* arbiter
+Its necessary to have a arbiter in a replication for the below reasons:
+https://stackoverflow.com/questions/18211154/why-do-we-need-an-arbiter-in-mongodb-replication
+Replication is more reliable if it has odd number of replica sets. Incase if there is even number of replica sets its better to add a arbiter in the replication.
+Arbiters do not hold data in them and they are just to vote in election when there is any node failure.
+Arbiter is a light weight process they do not consume much hardware resources.
+Arbiters just exchange the user credentials data between the replica set which are encrypted.
+Vote during elections,hearbeats and configureation data are not encrypted while communicating in between the replica sets.
+It is better to run arbiter on a separate machine rather than along with any one of the replica set to retain high availability.
+* sharding
+how to set
+https://github.com/minhhungit/mongodb-cluster-docker-compose
+components:
+- router: app only connects to routers
+- Config server: it knows where the data are stored. router will consult config server.
+- Shard
+** architect
+block split: max is 64M or 10W rows data. if above it, then split
+** init sharding
+#+begin_src js
+sh.enableSharding("test")
+sh.shardCollection("test.test",{"_id":"hashed"})
+db.adminCommand("flushRouterConfig")
+sh.enableBalancing("test.tset")
+sh.startBalance()
+sh.status({"verbose":1})
+
+use test
+for (i=1;i<=100;i=i+1) {
+    db.test.insert("price", i)
+}
+db.test.getShardDistribution()
+
+#+end_src
+* transaction
+#+begin_src js
+s=db.getMongo().startSession()
+s.startTransaction()
+s.getDatabase("test").test.insert({name:"a"})
+s.commitTransaction()
 #+end_src
