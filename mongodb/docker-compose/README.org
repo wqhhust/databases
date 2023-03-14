@@ -1,0 +1,70 @@
+#+title: Readme
+
+* how to run
+https://github.com/UpSync-Dev/docker-compose-mongo-replica-set
+#+begin_src bash
+docker exec -it mongo1 sh -c "mongo --port 30001"
+docker exec -it mongo2 sh -c "mongo --port 30002"
+docker exec -it mongo3 sh -c "mongo --port 30003"
+
+#+end_src
+
+
+test failover
+#+begin_src js
+//s on mongo1, the primary
+db.adminCommand({ "shutdown" : 1, "force" : true });
+#+end_src
+
+get replica set status
+#+begin_src javascript
+rs.status();
+// remove mongo1
+db.adminCommand(
+  {
+    "dropConnections" : 1,
+    "hostAndPort" : [
+      "<hostname>:<port>"
+    ]
+  }
+)
+rs.remove("mongo1:30001")
+rs.printReplicationInfo()
+rs.printSecondaryReplicationInfo()
+//rs.stepDown(stepDownSecs, secondaryCatchUpPeriodSecs)
+rs.stepDown(10, 1)
+
+// on the new primary
+rs.add("mongo1:30001")
+#+end_src
+
+To query on slave, need to set secondaryOk()
+#+begin_src bash
+my-replica-set:SECONDARY> use test;
+switched to db test
+my-replica-set:SECONDARY> db.test.find();
+Error: error: {
+	"topologyVersion" : {
+		"processId" : ObjectId("64102b70cdb9dbe7bf59bcab"),
+		"counter" : NumberLong(5)
+	},
+	"operationTime" : Timestamp(1678781479, 1),
+	"ok" : 0,
+	"errmsg" : "not master and slaveOk=false",
+	"code" : 13435,
+	"codeName" : "NotPrimaryNoSecondaryOk",
+	"$clusterTime" : {
+		"clusterTime" : Timestamp(1678781479, 1),
+		"signature" : {
+			"hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
+			"keyId" : NumberLong(0)
+		}
+	}
+}
+my-replica-set:SECONDARY> rs.secondaryOk() // This is very important to query from slave
+my-replica-set:SECONDARY> ;
+my-replica-set:SECONDARY> db.test.find();
+{ "_id" : ObjectId("64102be396cf0dfaed726a67"), "test" : 1 }
+my-replica-set:SECONDARY>
+
+#+end_src
