@@ -113,3 +113,19 @@ s.startTransaction()
 s.getDatabase("test").test.insert({name:"a"})
 s.commitTransaction()
 #+end_src
+* index
+#+begin_src js
+// delete duplicated data
+db.test.deleteMany({"name":"a"})
+db.test.createIndex({col2:1},{name:"demo_index",unique:true});
+db.test.find({col2:1}).explain("executionStats")
+db.test.getIndexes()
+#+end_src
+- COLLSCAN
+  table scan
+- IXSCAN
+  index scan
+- FETCH
+  use index to find document
+* interview
+https://www.bilibili.com/video/BV1V8411a7iW?t=319.7
