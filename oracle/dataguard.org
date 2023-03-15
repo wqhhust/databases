@@ -1,0 +1,106 @@
+#+title: Dataguard
+
+link
+https://www.acte.in/oracle-data-guard-interview-questions-and-answers/
+38. What are the common issues you face in dataguard environments?
+Replication issues due to network issues
+Archive  log Missing errors
+If a datafile is renamed on primary, then also error will come in standby.
+Issue may occur if someone mistakenly changes the dataguard related parameters like log_archive_config, log_archive_dest parameters.
+
+
+Q24.  What are the Step for Physical  Standby?
+
+Ans:
+
+These are the steps to follow:
+
+Enable forced logging
+Create a password file
+Configure a standby redo log
+Enable archiving
+Set up the primary database initialization parameters
+Configure the listener and tnsnames to support the database on both nodes
+
+SELECT thread#, sequence# AS “SEQ#”, name, first_change# AS “FIRSTSCN”,
+next_change# AS “NEXTSCN”,archived, deleted,completion_time AS “TIME”
+FROM   v$archived_log
+V$ log_history
+
+
+Q32. If you didn’t have access to the standby database and you wanted to find out what error has occurred in a data guard configuration, what view would you check in the primary database to check the error message?
+
+Ans:
+
+You can check the v$dataguard_status view.  Select message from v$dataguard_status;
+
+Q33.  In Oracle 11g, what command in RMAN can you use to create the standby database while the target database is active?
+
+Ans:
+
+Oracle 11g has made it extremely simple to set up a standby database environment because Recovery Manager (RMAN) now supports the ability to clone the existing primary database directly to the intended standby database site over the network via the DUPLICATE DATABASE command set while the target database is active.  RMAN automatically generates a conversion script in memory on the primary site and uses that script to manage the cloning operation on the standby site with virtually no DBA intervention required.   You can execute this in a run block in RMAN:duplicate target database for standby dorecover from active database;
+
+Q40.  If you have a low-bandwidth WAN network, what can you do to improve the Oracle 11g data guard configuration in a GAP detected situation?
+
+Ans:
+
+Oracle 11g introduces the capability to compress redo log data as it transports over the network to the standby database.  It can be enabled using the compression parameter.  Compression becomes enabled only when a gap exists and the standby database needs to catch up to the primary database.
+
+alter system set log_archive_dest_1=’SERVICE=DBA11GDR COMPRESSION=ENABLE’
+
+Q42.  How can you control when an archive log can be deleted in the standby database in oracle 11g ?
+
+Ans:
+
+In Oracle 11g, you can control it by using the log_auto_delete initialization parameter.  The log_auto_delete parameter must be coupled with the log_auto_del_retention_target parameter to specify the number of minutes an archivelog is maintained until it is purged. Default is 24 hours.  For archivelog retention to be effective, the log_auto_delete parameter must be set to true.
+
+Q49. how Redo Transport Services (RTS) works?
+
+Ans:
+
+Log Network Server (LNS) reads redo information from the redo buffer in SGA of PRIMARY Database
+Log Network Server (LNS) passes redo to Oracle Net Services for transmission to the STANDBY database
+Remote File Server (RFS) records the redo information transmitted by the LNS at the STANDBY database
+Remote File Server (RFS) writes it to a sequential file called a standby redo log file (SRL) at the STANDBY database
+
+Q50.Synchronous transport (SYNC) how it works?
+
+Ans:
+
+Log Network Server (LNS) reads redo information from the redo buffer in SGA of PRIMARY Database
+Log Network Server (LNS) passes redo to Oracle Net Services for transmission to the STANDBY database
+Remote File Server (RFS) records the redo information transmitted by the LNS at the STANDBY database
+Remote File Server (RFS) writes it to a sequential file called a standby redo log file (SRL) at the STANDBY database
+Remote File Server (RFS) transmits an acknowledgement back to the LNS process on the primary database
+Log Network Server (LNS) notifies the LGWR that transmission is complete on the primary database.
+Log Writer (LGWR) acknowledges the commit to the user.
+
+
+Q60. What are the operations happens when switchover command is executed?
+
+Ans:
+
+primary database is notified that a switchover is about to occur.
+all users are disconnected from the primary.
+a special redo record is generated that signals the End Of Redo (EOR).
+primary database is converted into a standby database.
+the final EOR record is applied to standby database, this guarantees that no data has been lost, and it converts the standby to the primary role.
+
+
+Q89.What are the services required on the primary and standby data-base?
+
+Ans:
+
+The services required on the primary database are:
+
+Log Writer Process (LGWR): Collects redo information and updates the online redo logs. It can also create local archived redo logs and transmit online redo to standby databases.
+Archiver Process (ARCn): One or more archiver processes make copies of online redo logs either locally or remotely for standby databases.
+Fetch Archive Log (FAL) Server: Services requests for archive redo logs from FAL clients running on multiple standby databases. Multiple FAL servers can be run on a primary database, one for each FAL request.
+Log network server (LNS): LNS is used on the primary to initiate a connection with the standby database.
+The services required on the standby database are:
+
+Fetch Archive Log (FAL) Client: Pulls archived redo log files from the primary site. Initiates transfer of archived redo logs when it detects a gap sequence.
+Remote File Server (RFS): Receives archived and/or standby redo logs from the primary database.
+Archiver (ARCn) Processes: Archives the standby redo logs applied by the managed recovery process (MRP).
+Managed Recovery Process (MRP): pplies archive redo log information to the standby database.
+It controls the automated transfer of redo data from the production database to one or more archival destinations. The redo transport services perform the following tasks.
