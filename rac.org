@@ -1,3 +1,0 @@
-#+title: Rac
-set up RAC using vagrant
-https://github.com/oraclebase/vagrant/blob/master/rac/ol7_19/README.md
