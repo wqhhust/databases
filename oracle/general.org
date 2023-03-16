@@ -1,0 +1,6 @@
+#+title: General
+
+* diff between v$datafile_head and v$datafile
+v$datafile is based on contorl file while v$datafile_head is based on datafile header
+https://dbvisit.com/blog/what-does-vdatafilelastchange-stop-scn-mean
+https://hemantoracledba.blogspot.com/2012/05/currentscn-and-checkpointchange.html
