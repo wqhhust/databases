@@ -1,6 +1,16 @@
 #+title: Dataguard
+* knowledge
+** how to set a dataguard mode and verify
+#+begin_src sql
+shutdown immediate
+startup mount
+alter database set standby database to maximize {AVAILABILITY | PERFORMANCE | PROTECTION};
+alter database open;
+select protection_mode, protection_level from v$database;
 
-link
+#+end_src
+
+* link and content
 https://www.acte.in/oracle-data-guard-interview-questions-and-answers/
 38. What are the common issues you face in dataguard environments?
 Replication issues due to network issues
@@ -104,3 +114,4 @@ Remote File Server (RFS): Receives archived and/or standby redo logs from the pr
 Archiver (ARCn) Processes: Archives the standby redo logs applied by the managed recovery process (MRP).
 Managed Recovery Process (MRP): pplies archive redo log information to the standby database.
 It controls the automated transfer of redo data from the production database to one or more archival destinations. The redo transport services perform the following tasks.
+s
