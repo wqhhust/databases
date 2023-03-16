@@ -9,5 +9,5 @@ As mentioned earlier, that is the maximum SCN number for which redo information 
 Many might think you need to recover the file to the current SCN of the database, but in fact you only need to recover it to this particular SCN.
 
 #+end_src
-https://dbvisit.com/blog/what-does-vdatafilelastchange-stop-scn-mean
-https://hemantoracledba.blogspot.com/2012/05/currentscn-and-checkpointchange.html
+- https://dbvisit.com/blog/what-does-vdatafilelastchange-stop-scn-mean
+- https://hemantoracledba.blogspot.com/2012/05/currentscn-and-checkpointchange.html
