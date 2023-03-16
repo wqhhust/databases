@@ -2,5 +2,9 @@
 
 * diff between v$datafile_head and v$datafile
 v$datafile is based on contorl file while v$datafile_head is based on datafile header
+#+begin_src
+the file cannot be placed online without doing recovery. But now the question becomes to what point does this file need to be recovered? Well, it needs to be recovered to a consistent state at which it can be opened, and the SCN number to which the file needs to be recovered to is the scn number specified by the Stop SCN. As mentioned earlier, that is the maximum SCN number for which redo information is available for this datafile. Many might think you need to recover the file to the current SCN of the database, but in fact you only need to recover it to this particular SCN.
+
+#+end_src
 https://dbvisit.com/blog/what-does-vdatafilelastchange-stop-scn-mean
 https://hemantoracledba.blogspot.com/2012/05/currentscn-and-checkpointchange.html
