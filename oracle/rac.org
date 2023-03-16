@@ -1,1 +1,34 @@
 #+title: Rac
+* GCS GES GRD
+https://www.youtube.com/watch?v=RQ_DV48Qvh0
+GCS and GES nominate the maste node to manage all info in GRD
+GES:
+- dict cache lock
+- library cache lock
+- dead locks
+GCS:
+- cache fusion
+* background processes
+
+- Lock monitor (LMON) process: The LMON process monitors all instances in a cluster to detect the failure of an instance. It then facilitates the recovery of the global locks held by the failed instance. It is also responsible for reconfiguring locks and other resources when instances leave or are added to the cluster (as they fail and come back online, or as new instances are added to the cluster in real time).
+
+- Lock manager daemon (LMD) process: The LMD process handles lock manager service requests for the global cache service (keeping the block buffers consistent between instances). It works primarily as a broker sending requests for resources to a queue that is handled by the LMSn processes. The LMD handles global deadlock detection/resolution and monitors for lock timeouts in the global environment.
+
+- Lock manager server (LMSn) process: As noted earlier, in a RAC environment, each instance of Oracle is running on a different machine in a cluster, and they all access, in a read-write fashion, the same exact set of database files. To achieve this, the SGA block buffer caches must be kept consistent with respect to each other. This is one of the main goals of the LMSn process In earlier releases of Oracle Parallel Server (OPS) this was accomplished via a ping. That is, if a node in the cluster needed a read-consistent view of a block that was locked in exclusive mode by another node, the exchange of data was done via a disk flush (the block was pinged). This was a very expensive operation just to read data. Now, with the LMSn, this exchange is done via very fast cache-to-cache exchange over the clusters¿ high-speed connection. You may have up to ten LMSn processes per instance.
+
+- Lock (LCK0) process: This process is very similar in functionality to the LMD process described earlier, but it handles requests for all global resources other than database block buffers.
+
+- Diagnosability daemon (DIAG) process: The DIAG process is used exclusively in a RAC environment. It is responsible for monitoring the overall ¿health¿ of the instance, and it captures information needed in the processing of instance failures.
+* command
+** srvctl
+stop/start/show instance statu
+#+begin_src bash
+[oracle@node1 app]$ srvctl status instance -d DB193H1 -i DB193H11,DB193H12
+Instance DB193H11 is running on node node1
+Instance DB193H12 is running on node node2
+[oracle@node1 app]$ srvctl stop instance -d  DB193H1 -i DB193H11
+[oracle@node1 app]$  srvctl status instance -d DB193H1 -i DB193H11,DB193H12
+Instance DB193H11 is not running on node node1
+Instance DB193H12 is running on node node2
+[oracle@node1 app]$
+#+end_src
